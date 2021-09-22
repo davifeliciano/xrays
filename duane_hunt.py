@@ -38,11 +38,18 @@ fig, ax = plt.subplots(1, 2)
 # First plot: impulses in terms of angles
 ax[0].set(xlabel=r"$\theta$ (\si{\degree})", ylabel="Impulsos")
 
+# Adding correction to the angles based on the result of angular.py
+correction_df = pd.read_csv("results/angular_result.csv", decimal=",")
+correction = correction_df.loc[0, "center"]
+
 roots = []
 roots_stderr = []
 for voltage, df in zip(voltages, dfs):
-    x_filtered = gaussian_filter1d(df.loc[:, "Angle"], sigma=3)
-    y_filtered = gaussian_filter1d(df.loc[:, "Impulses"], sigma=3)
+    x_data = df.loc[:, "Angle"] + correction
+    y_data = df.loc[:, "Impulses"] + correction
+
+    x_filtered = gaussian_filter1d(x_data, sigma=3)
+    y_filtered = gaussian_filter1d(y_data, sigma=3)
     plot = ax[0].plot(x_filtered, y_filtered, label=rf"{voltage} \si{{kV}}")
     color = plot[-1].get_color()
 
