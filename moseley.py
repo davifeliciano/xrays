@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
 from scipy.stats import linregress
+from scipy.interpolate import UnivariateSpline
 
 LIGHT_SPEED = 299792458
 CRYSTAL = 201.4e-12
@@ -57,25 +58,29 @@ for ax in axes[:, 0].flat:
 
 # Range of angles inside which is expected an absorption edge
 abs_range = {
-    "Zn": (17.8, 18.8),
-    "Ge": (15.8, 16.8),
-    "As": (14.8, 15.8),
-    "Se": (14.3, 15.3),
-    "Br": (13.3, 14.3),
-    "Rb": (11.8, 12.8),
-    "Sr": (10.3, 11.3),
+    "Zn": (18.0, 19.0),
+    "Ge": (15.5, 16.5),
+    "As": (14.5, 15.5),
+    "Se": (13.5, 14.5),
+    "Br": (12.5, 13.5),
+    "Rb": (11.0, 12.0),
+    "Sr": (10.5, 11.5),
 }
 
 
-def get_inflection(array):
-    """Return the indexes of inflection points of an array"""
-    # Compute the first derivative of the array
-    fd = np.gradient(array)
-    # Compute the second derivative of the array
-    sd = np.gradient(fd)
-    # Create a iterator with True in indexes where the sd changes sign
-    inflection = np.r_[True, np.sign(sd[1:]) == -np.sign(sd[:-1])].flat
-    return [i for i, flag in enumerate(inflection) if flag]
+def get_inflection(x_data, y_data):
+    """Return the x values of inflection points given x and y numpy arrays"""
+    # Create an spline that fits the data
+    y_spl = UnivariateSpline(x_data, y_data)
+    # Create an spline that represents its second derivative
+    y_spl_sd = y_spl.derivative(n=2)
+    domain = np.arange(5, 20, 0.01).flat
+    # Return a list of values of x for which y_spl_sd == 0
+    return [
+        x
+        for i, x in enumerate(domain[:-1])
+        if np.sign(y_spl_sd(x)) == -np.sign(y_spl_sd(domain[i + 1]))
+    ]
 
 
 # Color generator to use in plots
@@ -98,8 +103,8 @@ for ax, df, element in zip(axes.flat, dfs, elements):
     x_data = df.loc[:, "Angle"].to_numpy() / 2 + correction
     y_data = df.loc[:, "Impulses"].to_numpy()
 
-    x_data_filtered = gaussian_filter1d(x_data, sigma=1.0)
-    y_data_filtered = gaussian_filter1d(y_data, sigma=1.0)
+    x_data_filtered = gaussian_filter1d(x_data, sigma=1.5)
+    y_data_filtered = gaussian_filter1d(y_data, sigma=1.5)
 
     ax.tick_params(reset=True)
 
@@ -112,12 +117,18 @@ for ax, df, element in zip(axes.flat, dfs, elements):
     )
     ax.plot(x_data_filtered, y_data_filtered, "--", color=next_color, linewidth=0.7)
 
-    inflection_indexes = get_inflection(y_data_filtered)
-    inflection_angles = x_data[inflection_indexes].flat
+    inflection_angles = get_inflection(x_data_filtered, y_data_filtered)
+
+    found = False
     for angle in inflection_angles:
         if angle >= abs_range[element][0] and angle <= abs_range[element][1]:
+            found = True
             k_abs_edge = angle
-    k_abs_edges.append(k_abs_edge)
+            k_abs_edges.append(k_abs_edge)
+    if not found:
+        raise ValueError(
+            f"No inflection point found in range ({abs_range[element][0]}, {abs_range[element][1]}) for element {element}"
+        )
 
     ax.vlines(
         k_abs_edge,
@@ -194,7 +205,7 @@ for column in result_df.columns:
 result_df.to_csv("results/k_abs_edges.csv", decimal=",", index=None)
 
 # Linear regression of the data
-reg = linregress(sqrt_energies_js[:-1], zs[:-1])
+reg = linregress(sqrt_energies_js, zs)
 
 slope = reg.slope
 slope_stderr = reg.stderr
@@ -223,22 +234,13 @@ fig_moseley, ax_moseley = plt.subplots(figsize=(5, 4))
 ax_moseley.set(xlabel=r"$\sqrt{E} \; (\si{Js})$", ylabel="Z")
 
 ax_moseley.errorbar(
-    sqrt_energies_js[:-1],
-    zs[:-1],
-    xerr=sqrt_energies_js_stderr[:-1],
+    sqrt_energies_js,
+    zs,
+    xerr=sqrt_energies_js_stderr,
     fmt="none",
     color="blue",
     ms=3.5,
-    label="Pontos Considerados no Ajuste",
-)
-ax_moseley.errorbar(
-    sqrt_energies_js[-1],
-    zs[-1],
-    xerr=sqrt_energies_js_stderr[-1],
-    fmt="none",
-    color="red",
-    ms=3.5,
-    label="Pontos Desprezados no Ajuste",
+    label="Dados Considerados no Ajuste",
 )
 
 xlim = xmin, xmax = ax_moseley.get_xlim()
