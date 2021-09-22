@@ -57,13 +57,13 @@ for ax in axes[:, 0].flat:
 
 # Range of angles inside which is expected an absorption edge
 abs_range = {
-    "Zn": (17.5, 18.5),
-    "Ge": (15.5, 16.5),
-    "As": (14.5, 15.5),
-    "Se": (14.0, 15.0),
-    "Br": (13.0, 14.0),
-    "Rb": (11.5, 12.5),
-    "Sr": (10.0, 11.0),
+    "Zn": (17.8, 18.8),
+    "Ge": (15.8, 16.8),
+    "As": (14.8, 15.8),
+    "Se": (14.3, 15.3),
+    "Br": (13.3, 14.3),
+    "Rb": (11.8, 12.8),
+    "Sr": (10.3, 11.3),
 }
 
 
@@ -87,10 +87,15 @@ def color_gen(lenght):
 color = color_gen(len(elements))
 ylim = ymin, ymax = (-100, 3500)
 
+# Adding correction to the angles based on the result of angular.py
+correction_df = pd.read_csv("results/angular_result.csv", decimal=",")
+correction = correction_df.loc[1, "center"]
+angle_stderr = correction_df.loc[1, "center_stderr"]
+
 k_abs_edges = []
 
 for ax, df, element in zip(axes.flat, dfs, elements):
-    x_data = df.loc[:, "Angle"].to_numpy() / 2
+    x_data = df.loc[:, "Angle"].to_numpy() / 2 + correction
     y_data = df.loc[:, "Impulses"].to_numpy()
 
     x_data_filtered = gaussian_filter1d(x_data, sigma=1.0)
@@ -120,18 +125,32 @@ for ax, df, element in zip(axes.flat, dfs, elements):
         ymax,
         color="red",
         linewidth=0.5,
-        label=rf"$\theta = {k_abs_edge}\si{{\degree}}$",
+        label=rf"$\theta = {k_abs_edge:.1f}\si{{\degree}}$",
     )
 
     ax.set(ylim=ylim)
     ax.legend(loc="upper left")
 
 # Second plot: Moseley diagram (atomic number in terms of sqrt of energy)
-one_over_sin = 1 / np.sin(np.radians(np.array(k_abs_edges)))
+
+# Computing physical variables of interest
+k_abs_edges_stderr = np.full(len(k_abs_edges), angle_stderr)
+k_abs_edges_rad = np.radians(k_abs_edges)
+k_abs_edges_rad_stderr = np.radians(angle_stderr)
+one_over_sin = 1 / np.sin(k_abs_edges_rad)
+one_over_sin_stderr = (
+    np.radians(angle_stderr) * np.cos(k_abs_edges_rad) / np.sin(k_abs_edges_rad) ** 2
+)
+
 energies_js = 0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin / CRYSTAL
+energies_js_stderr = 0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin_stderr / CRYSTAL
 energies_kev = 5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin / CRYSTAL
+energies_kev_stderr = 5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin_stderr / CRYSTAL
 sqrt_energies_js = np.sqrt(energies_js)
+sqrt_energies_js_stderr = 0.5 * energies_js_stderr / np.sqrt(energies_js)
 sqrt_energies_kev = np.sqrt(energies_kev)
+sqrt_energies_kev_stderr = 0.5 * energies_kev_stderr / np.sqrt(energies_kev)
+
 zs = [atomic_number[element] for element in elements]
 
 # df with the data of the plot to export as a csv
@@ -140,19 +159,29 @@ result_df = pd.DataFrame(
         elements,
         zs,
         k_abs_edges,
+        k_abs_edges_stderr,
         energies_js,
-        sqrt_energies_js,
+        energies_js_stderr,
         energies_kev,
+        energies_kev_stderr,
+        sqrt_energies_js,
+        sqrt_energies_js_stderr,
         sqrt_energies_kev,
+        sqrt_energies_kev_stderr,
     ],
     index=(
         "element",
         "z",
-        "edge_angle",
-        "energy_js",
-        "sqrt(energy_js)",
-        "energy_ev",
-        "sqrt(energy_ev)",
+        "k_abs_edges",
+        "k_abs_edges_stderr",
+        "energies_js",
+        "energies_js_stderr",
+        "energies_kev",
+        "energies_kev_stderr",
+        "sqrt_energies_js",
+        "sqrt_energies_js_stderr",
+        "sqrt_energies_kev",
+        "sqrt_energies_kev_stderr",
     ),
 )
 
@@ -193,17 +222,31 @@ fig_moseley, ax_moseley = plt.subplots(figsize=(5, 4))
 
 ax_moseley.set(xlabel=r"$\sqrt{E} \; (\si{Js})$", ylabel="Z")
 
-ax_moseley.plot(
-    sqrt_energies_js[:-1], zs[:-1], "o", ms=3.5, label="Pontos Considerados no Ajuste"
+ax_moseley.errorbar(
+    sqrt_energies_js[:-1],
+    zs[:-1],
+    xerr=sqrt_energies_js_stderr[:-1],
+    fmt="none",
+    color="blue",
+    ms=3.5,
+    label="Pontos Considerados no Ajuste",
 )
-ax_moseley.plot(
-    sqrt_energies_js[-1], zs[-1], "ro", ms=3.5, label="Pontos Desprezados no Ajuste"
+ax_moseley.errorbar(
+    sqrt_energies_js[-1],
+    zs[-1],
+    xerr=sqrt_energies_js_stderr[-1],
+    fmt="none",
+    color="red",
+    ms=3.5,
+    label="Pontos Desprezados no Ajuste",
 )
 
 xlim = xmin, xmax = ax_moseley.get_xlim()
 x = np.linspace(xmin, xmax)
 
-ax_moseley.plot(x, slope * x + intercept, label="Ajuste Linear", zorder=-1)
+ax_moseley.plot(
+    x, slope * x + intercept, color="orange", label="Ajuste Linear", zorder=-1
+)
 
 ax_moseley.set(xlim=xlim)
 ax_moseley.legend()
