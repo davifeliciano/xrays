@@ -42,8 +42,14 @@ ax[0].set(xlabel=r"$\theta$ (\si{\degree})", ylabel="Impulsos")
 correction_df = pd.read_csv("results/angular_result.csv", decimal=",")
 correction = correction_df.loc[0, "center"]
 
+slopes = []
+slopes_stderr = []
+intercepts = []
+intercepts_stderr = []
+rvalues = []
 roots = []
 roots_stderr = []
+
 for voltage, df in zip(voltages, dfs):
     x_data = df.loc[:, "Angle"] + correction
     y_data = df.loc[:, "Impulses"] + correction
@@ -69,40 +75,42 @@ for voltage, df in zip(voltages, dfs):
         abs(reg.stderr / slope) ** 2 + abs(reg.intercept_stderr / intercept) ** 2
     )
 
+    slopes.append(slope)
+    slopes_stderr.append(slope_stderr)
+    intercepts.append(intercept)
+    intercepts_stderr.append(intercept_stderr)
+    rvalues.append(rvalue)
     roots.append(root)
     roots_stderr.append(root_stderr)
-
-    # df with the regression results to export as csv
-    reg_df = pd.DataFrame(
-        [
-            [
-                voltage,
-                slope,
-                slope_stderr,
-                intercept,
-                intercept_stderr,
-                rvalue,
-                root,
-                root_stderr,
-            ]
-        ],
-        columns=(
-            "voltage",
-            "slope",
-            "slope_stderr",
-            "intercept",
-            "intercept_stderr",
-            "rvalue",
-            "root",
-            "root_stderr",
-        ),
-    )
-
-    reg_df.to_csv(f"results/{voltage}kV_reg_result.csv", decimal=",", index=None)
 
     x = np.linspace(root, x_filtered[-1])
     ax[0].plot(x, slope * x + intercept, ":", color=color)
 
+# df with the regression results to export as csv
+reg_df = pd.DataFrame(
+    [
+        voltages,
+        slopes,
+        slopes_stderr,
+        intercepts,
+        intercepts_stderr,
+        rvalues,
+        roots,
+        roots_stderr,
+    ],
+    index=(
+        "voltage",
+        "slope",
+        "slope_stderr",
+        "intercept",
+        "intercept_stderr",
+        "rvalue",
+        "root",
+        "root_stderr",
+    ),
+)
+
+reg_df.transpose().to_csv(f"results/duane_hunt_result.csv", decimal=",", index=None)
 
 ax[0].legend()
 ax[0].grid(linestyle=":")
