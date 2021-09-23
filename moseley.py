@@ -103,8 +103,8 @@ for ax, df, element in zip(axes.flat, dfs, elements):
     x_data = df.loc[:, "Angle"].to_numpy() / 2 + correction
     y_data = df.loc[:, "Impulses"].to_numpy()
 
-    x_data_filtered = gaussian_filter1d(x_data, sigma=1.5)
-    y_data_filtered = gaussian_filter1d(y_data, sigma=1.5)
+    x_data_filtered = gaussian_filter1d(x_data, sigma=1.0)
+    y_data_filtered = gaussian_filter1d(y_data, sigma=1.0)
 
     ax.tick_params(reset=True)
 
