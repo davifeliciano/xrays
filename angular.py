@@ -31,6 +31,8 @@ def gaussian(x, a, center, width):
 
 center = []
 center_stderr = []
+width = []
+width_stderr = []
 
 for aperture, ax, df in zip(apertures, axes, dfs):
     x_data = df.loc[:, "Angle"]
@@ -48,6 +50,8 @@ for aperture, ax, df in zip(apertures, axes, dfs):
 
     center.append(params[1])
     center_stderr.append(params_sdterr[1])
+    width.append(abs(params[2]))
+    width_stderr.append(params_sdterr[2])
 
     x = np.linspace(x_data.iloc[0], x_data.iloc[-1], 500)
 
@@ -58,8 +62,8 @@ for aperture, ax, df in zip(apertures, axes, dfs):
     ax.grid(linestyle=":")
 
 result_df = pd.DataFrame(
-    np.array([apertures, center, center_stderr]).T,
-    columns=("aperture", "center", "center_stderr"),
+    np.array([apertures, center, center_stderr, width, width_stderr]).T,
+    columns=("aperture", "center", "center_stderr", "width", "width_stderr"),
 )
 
 result_df.to_csv("results/angular_result.csv", decimal=",", index=None)
