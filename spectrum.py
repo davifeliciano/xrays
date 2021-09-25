@@ -115,8 +115,8 @@ for ax, crystal, aperture, voltage, df, params in zip(
     k_beta_angles_stderr = np.full(k_beta_angles.size, angle_stderr)
     k_alpha_bragg = k_alpha_angles / 2
     k_beta_bragg = k_beta_angles / 2
-    k_alpha_bragg_stderr = k_alpha_angles_stderr / 2
-    k_beta_bragg_stderr = k_beta_angles_stderr / 2
+    k_alpha_bragg_stderr = k_alpha_angles_stderr
+    k_beta_bragg_stderr = k_beta_angles_stderr
     k_alpha_bragg_rad = np.radians(k_alpha_bragg)
     k_beta_bragg_rad = np.radians(k_beta_bragg)
     k_alpha_bragg_rad_stderr = np.radians(k_alpha_bragg_stderr)
