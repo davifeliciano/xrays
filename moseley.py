@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
+from scipy.odr.odrpack import Output
 from scipy.stats import linregress
 from scipy.interpolate import UnivariateSpline
+import scipy.odr as odr
 
 LIGHT_SPEED = 299792458
 CRYSTAL = 201.4e-12
@@ -205,6 +207,11 @@ for column in result_df.columns:
 result_df.to_csv("results/k_abs_edges.csv", decimal=",", index=None)
 
 # Linear regression of the data
+slopes = []
+slopes_stderr = []
+intercepts = []
+intercepts_stderr = []
+
 reg = linregress(sqrt_energies_js, zs)
 
 slope = reg.slope
@@ -212,22 +219,48 @@ slope_stderr = reg.stderr
 intercept = reg.intercept
 intercept_stderr = reg.intercept_stderr
 rvalue = reg.rvalue
+
+slopes.append(slope)
+slopes_stderr.append(slope_stderr)
+intercepts.append(intercept)
+intercepts_stderr.append(intercept_stderr)
+
+# Orthogonal distance regression of the data
+linear_model = odr.Model(lambda params, x: params[0] * x + params[1])
+data = odr.RealData(sqrt_energies_js, zs, sx=sqrt_energies_js_stderr)
+odr_reg = odr.ODR(data, linear_model, beta0=[slope, intercept])
+result = odr_reg.run()
+
+slope_odr = result.beta[0]
+intercept_odr = result.beta[1]
+
+slopes.append(slope_odr)
+slopes_stderr.append(result.sd_beta[0])
+intercepts.append(intercept_odr)
+intercepts_stderr.append(result.sd_beta[1])
+
 expected_slope = 1 / np.sqrt(RYDBERG * PLANCK_JS)
 
 # df with the regression results to export as csv
 reg_df = pd.DataFrame(
-    [[slope, slope_stderr, expected_slope, intercept, intercept_stderr, rvalue]],
-    columns=(
+    [
+        slopes,
+        slopes_stderr,
+        [expected_slope, expected_slope],
+        intercepts,
+        intercepts_stderr,
+    ],
+    index=(
         "slope",
         "slope_stderr",
         "expected_slope",
         "intercept",
         "intercept_stderr",
-        "rvalue",
     ),
+    columns=("regression", "odr_regression"),
 )
 
-reg_df.to_csv("results/moseley_reg_result.csv", decimal=",", index=None)
+reg_df.transpose().to_csv("results/moseley_reg_result.csv", decimal=",")
 
 fig_moseley, ax_moseley = plt.subplots(figsize=(5, 4))
 
@@ -247,7 +280,21 @@ xlim = xmin, xmax = ax_moseley.get_xlim()
 x = np.linspace(xmin, xmax)
 
 ax_moseley.plot(
-    x, slope * x + intercept, color="orange", label="Ajuste Linear", zorder=-1
+    x,
+    slope * x + intercept,
+    "-",
+    color="orange",
+    label="Regressão Linear",
+    zorder=-1,
+)
+
+ax_moseley.plot(
+    x,
+    slope_odr * x + intercept_odr,
+    "--",
+    color="green",
+    label="Regressão ODR",
+    zorder=-1,
 )
 
 ax_moseley.set(xlim=xlim)
