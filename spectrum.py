@@ -56,6 +56,7 @@ fp_params = (
 
 # Adding correction to the angles based on the result of angular.py
 correction_df = pd.read_csv("results/angular_result.csv", decimal=",")
+angle_stderr = 0.5
 
 for ax, crystal, aperture, voltage, df, params in zip(
     axes, crystals, apertures, voltages, dfs, fp_params
@@ -68,12 +69,10 @@ for ax, crystal, aperture, voltage, df, params in zip(
 
     if aperture == 2.0:
         correction = correction_df.loc[0, "center"]
-        angle_stderr = correction_df.loc[0, "center_stderr"]
     if aperture == 5.0:
         correction = correction_df.loc[1, "center"]
-        angle_stderr = correction_df.loc[1, "center_stderr"]
 
-    x_data = gaussian_filter1d(df.loc[:, "Angle"], sigma=2) + correction
+    x_data = gaussian_filter1d(df.loc[:, "Angle"], sigma=2) - correction
     y_data = gaussian_filter1d(df.loc[:, "Impulses"], sigma=2)
 
     ax.plot(x_data, y_data)

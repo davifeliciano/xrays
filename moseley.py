@@ -64,7 +64,7 @@ abs_range = {
     "Se": (13.5, 14.5),
     "Br": (12.5, 13.5),
     "Rb": (11.0, 12.0),
-    "Sr": (10.5, 11.5),
+    "Sr": (10.0, 11.0),
 }
 
 
@@ -95,13 +95,13 @@ ylim = ymin, ymax = (-100, 3500)
 # Adding correction to the angles based on the result of angular.py
 correction_df = pd.read_csv("results/angular_result.csv", decimal=",")
 correction = correction_df.loc[1, "center"]
-angle_stderr = correction_df.loc[1, "center_stderr"]
+angle_stderr = 0.5
 
 k_abs_edges = []
 
 for ax, df, element in zip(axes.flat, dfs, elements):
-    x_data = df.loc[:, "Angle"].to_numpy() / 2 + correction
-    y_data = df.loc[:, "Impulses"].to_numpy()
+    x_data = (df.loc[:, "Angle"] - correction) / 2
+    y_data = df.loc[:, "Impulses"]
 
     x_data_filtered = gaussian_filter1d(x_data, sigma=1.0)
     y_data_filtered = gaussian_filter1d(y_data, sigma=1.0)
@@ -237,7 +237,7 @@ ax_moseley.errorbar(
     sqrt_energies_js,
     zs,
     xerr=sqrt_energies_js_stderr,
-    fmt="none",
+    fmt="o",
     color="blue",
     ms=3.5,
     label="Dados Considerados no Ajuste",

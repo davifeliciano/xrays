@@ -50,7 +50,7 @@ correction = correction_df.loc[0, "center"]
 peak_angles = []
 
 for ax, df, type in zip(axes, dfs, monochrom_types):
-    x_data = gaussian_filter1d(df.loc[:, "Angle"], sigma=2) + correction
+    x_data = gaussian_filter1d(df.loc[:, "Angle"], sigma=2) - correction
     y_data = gaussian_filter1d(df.loc[:, "Impulses"], sigma=2)
 
     x_data_ref = gaussian_filter1d(df_ref.loc[:, "Angle"], sigma=2)
