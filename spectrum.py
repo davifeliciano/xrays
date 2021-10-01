@@ -142,38 +142,38 @@ for ax, crystal, aperture, voltage, df, params in zip(
         CRYSTAL = CRYSTAL_KBR
 
     k_alpha_energies_js = [
-        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_alpha)
     ]
     k_alpha_energies_js_stderr = [
-        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_alpha_stderr)
     ]
 
     k_alpha_energies_kev = [
-        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_alpha)
     ]
     k_alpha_energies_kev_stderr = [
-        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_alpha_stderr)
     ]
 
     k_beta_energies_js = [
-        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_beta)
     ]
     k_beta_energies_js_stderr = [
-        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        0.5 * PLANCK_JS * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_beta_stderr)
     ]
 
     k_beta_energies_kev = [
-        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_beta)
     ]
     k_beta_energies_kev_stderr = [
-        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin / ((i + 1) * CRYSTAL)
+        5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin * (i + 1) / CRYSTAL
         for i, one_over_sin in enumerate(one_over_sin_k_beta_stderr)
     ]
 
