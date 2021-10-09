@@ -45,12 +45,12 @@ dfs = [
 
 fig, axes = plt.subplots(3, 1)
 
-axes[-1].set(xlabel=r"$\theta$ (\si{\degree})")
+axes[-1].set(xlabel=r"$2\theta$ (\si{\degree})")
 
 # Params to use in find_peaks for each dataset
 fp_params = (
-    {"height": None, "threshold": 0.3, "width": 5},
     {"height": 30.0, "threshold": None, "width": None},
+    {"height": None, "threshold": 0.3, "width": 5},
     {"height": None, "threshold": 2.0, "width": None},
 )
 
