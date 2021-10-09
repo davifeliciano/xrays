@@ -51,8 +51,8 @@ roots = []
 roots_stderr = []
 
 for voltage, df in zip(voltages, dfs):
-    x_data = df.loc[:, "Angle"] - correction
-    y_data = df.loc[:, "Impulses"]
+    x_data = df.loc[:, "Angle"] / 2 - correction
+    y_data = df.loc[:, "Impulses"] / 2
 
     x_filtered = gaussian_filter1d(x_data, sigma=3)
     y_filtered = gaussian_filter1d(y_data, sigma=3)
