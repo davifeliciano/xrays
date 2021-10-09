@@ -161,8 +161,8 @@ energies_kev = 5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin / CRYSTAL
 energies_kev_stderr = 5e-4 * PLANCK_EV * LIGHT_SPEED * one_over_sin_stderr / CRYSTAL
 sqrt_energies_js = np.sqrt(energies_js)
 sqrt_energies_js_stderr = 0.5 * energies_js_stderr / np.sqrt(energies_js)
-sqrt_energies_kev = np.sqrt(energies_kev)
-sqrt_energies_kev_stderr = 0.5 * energies_kev_stderr / np.sqrt(energies_kev)
+sqrt_energies_kev = np.sqrt(energies_kev * 1000) / 1000
+sqrt_energies_kev_stderr = 0.5 * energies_kev_stderr / sqrt_energies_kev
 
 zs = [atomic_number[element] for element in elements]
 
