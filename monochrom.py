@@ -41,7 +41,7 @@ monochrom_types.append("none")
 
 fig, axes = plt.subplots(3, 1)
 
-axes[-1].set(xlabel=r"$\theta$ (\si{\degree})")
+axes[-1].set(xlabel=r"$2\theta$ (\si{\degree})")
 
 # Adding correction to the angles based on the result of angular.py
 correction_df = pd.read_csv("results/angular_result.csv", decimal=",")
