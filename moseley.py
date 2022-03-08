@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
-from scipy.odr.odrpack import Output
+from scipy.odr import Output
 from scipy.stats import linregress
 from scipy.interpolate import UnivariateSpline
 import scipy.odr as odr

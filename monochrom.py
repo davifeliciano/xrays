@@ -15,7 +15,7 @@ plt.rcParams.update(
     }
 )
 
-files = glob.glob("data\data2\Monocromatização\Monocromatização*.dat")
+files = glob.glob("data/data2/Monocromatização/Monocromatização*.dat")
 monochrom_types = [file.split()[-1].split(".")[0] for file in files]
 
 dfs = [
@@ -30,7 +30,7 @@ dfs = [
 ]
 
 df_ref = pd.read_csv(
-    "data\data2\Monocromatização\Tubo de Cobre 2mm 26 keV ref para filtragem.dat",
+    "data/data2/Monocromatização/Tubo de Cobre 2mm 26 keV ref para filtragem.dat",
     sep="\s+",
     skiprows=(1, 2),
     decimal=",",
